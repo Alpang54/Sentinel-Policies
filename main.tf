@@ -7,9 +7,7 @@ terraform {
   }
 }
 
-provider "aws" {
-  region = "us-east-1"
-}
+mock_provider "aws" {}
 
 
 data "aws_iam_policy_document" "topic" {
