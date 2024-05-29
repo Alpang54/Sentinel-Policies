@@ -26,7 +26,7 @@ resource "aws_iam_policy" "policy" {
   "Statement": [
     {
       "Sid": "1",
-      "Effect": "Deny",
+      "Effect": "Allow",
       "Action": [
         "s3:DeleteBucketPolicy",
         "s3:PutBucketAcl",
