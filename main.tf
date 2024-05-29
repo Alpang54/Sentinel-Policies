@@ -25,9 +25,9 @@ resource "aws_s3_bucket_policy" "example" {
 
 data "aws_iam_policy_document" "example" {
   statement {
-    "sid" : "1"
+    sid = "1"
 
-    "actions" : [
+    actions = [
       "s3:DeleteBucketPolicy",
       "s3:PutBucketAcl",
       "s3:PutBucketPolicy",
@@ -35,13 +35,13 @@ data "aws_iam_policy_document" "example" {
       "s3:PutObjectAcl"
     ]
 
-    "effect" : "Deny"
+    effect = "Deny"
 
-    "resources" : [
+    resources = [
       "arn:aws:s3:::*",
     ]
 
-    "Condition": {
+    Condition = {
         "StringNotEquals": {
           "aws:ResourceAccount": [
             data.aws_caller_identity.current.account_id
