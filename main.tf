@@ -23,5 +23,5 @@ data "template_file" "s3_bucket_policy" {
 
 resource "aws_s3_bucket_policy" "example" {
   bucket = aws_s3_bucket.example.id
-  policy = data.template_file.s3_bucket_policy
+  policy = data.template_file.s3_bucket_policy.template
 }
