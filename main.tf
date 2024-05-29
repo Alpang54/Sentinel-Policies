@@ -28,11 +28,7 @@ resource "aws_iam_policy" "policy" {
       "Sid": "1",
       "Effect": "Allow",
       "Action": [
-        "s3:DeleteBucketPolicy",
-        "s3:PutBucketAcl",
-        "s3:PutBucketPolicy",
-        "s3:PutEncryptionConfiguration",
-        "s3:PutObjectAcl"
+        "s3:*"
       ],
       "Resource": [
         "arn:aws:s3:::*"
