@@ -43,9 +43,9 @@ data "aws_iam_policy_document" "example" {
 
     Condition = {
         StringNotEquals = {
-          aws:ResourceAccount = data.aws_caller_identity.current.account_id
+          "aws:ResourceAccount" = data.aws_caller_identity.current.account_id
       }
     }
-
+  }
 }
 
