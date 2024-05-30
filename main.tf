@@ -20,7 +20,7 @@ resource "aws_dynamodb_table" "basic-dynamodb-table" {
   range_key      = "GameTitle"
 
   point_in_time_recovery {
-    enabled = true
+    enabled = false
   }
 
   attribute {
