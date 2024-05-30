@@ -11,46 +11,33 @@ provider "aws" {
   region = "us-east-1"
 }
 
-resource "aws_dynamodb_table" "basic-dynamodb-table" {
-  name           = "GameScores"
-  billing_mode   = "PROVISIONED"
-  read_capacity  = 20
-  write_capacity = 20
-  hash_key       = "UserId"
-  range_key      = "GameTitle"
+resource "aws_db_parameter_group" "example" {
+  name   = "my-pg"
+  family = "postgres13"
 
-  attribute {
-    name = "UserId"
-    type = "S"
+  parameter {
+    name  = "enabled_cloudwatch_logs_exports"
+    value = "audit,error,general,slowquery"
   }
 
-  attribute {
-    name = "GameTitle"
-    type = "S"
-  }
-
-  attribute {
-    name = "TopScore"
-    type = "N"
-  }
-
-  ttl {
-    attribute_name = "TimeToExist"
-    enabled        = false
-  }
-
-  global_secondary_index {
-    name               = "GameTitleIndex"
-    hash_key           = "GameTitle"
-    range_key          = "TopScore"
-    write_capacity     = 10
-    read_capacity      = 10
-    projection_type    = "INCLUDE"
-    non_key_attributes = ["UserId"]
-  }
-
-  tags = {
-    Name        = "dynamodb-table-1"
-    Environment = "production"
+  lifecycle {
+    create_before_destroy = true
   }
 }
+
+
+
+resource "aws_rds_cluster" "default" {
+  parameter_group_name    = aws_db_parameter_group.example.name
+  apply_immediately       = true
+  cluster_identifier      = "aurora-cluster-demo"
+  engine                  = "aurora-mysql"
+  engine_version          = "5.7.mysql_aurora.2.03.2"
+  availability_zones      = ["us-west-2a", "us-west-2b", "us-west-2c"]
+  database_name           = "mydb"
+  master_username         = "foo"
+  master_password         = "bar"
+  backup_retention_period = 5
+  preferred_backup_window = "07:00-09:00"
+}
+
