@@ -19,10 +19,6 @@ resource "aws_dynamodb_table" "basic-dynamodb-table" {
   hash_key       = "UserId"
   range_key      = "GameTitle"
 
-  point_in_time_recovery {
-    enabled = false
-  }
-
   attribute {
     name = "UserId"
     type = "S"
