@@ -11,10 +11,14 @@ provider "aws" {
   region = "us-east-1"
 }
 
-resource "aws_efs_file_system" "foo" {
+resource "aws_efs_file_system" "fs" {
   creation_token = "my-product"
+}
 
-  tags = {
-    Name = "MyProduct"
+resource "aws_efs_backup_policy" "policy" {
+  file_system_id = aws_efs_file_system.fs.id
+
+  backup_policy {
+    status = "ENABLED"
   }
 }
