@@ -11,40 +11,47 @@ provider "aws" {
   region = "us-east-1"
 }
 
-data "aws_caller_identity" "current" {}
+resource "aws_dynamodb_table" "basic-dynamodb-table" {
+  name           = "GameScores"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 20
+  write_capacity = 20
+  hash_key       = "UserId"
+  range_key      = "GameTitle"
+  point_in_time_recovery = true
 
-resource "aws_s3_bucket" "example" {
-  bucket = "example"
-}
+  attribute {
+    name = "UserId"
+    type = "S"
+  }
 
-resource "aws_iam_policy" "policy" {
-  name        = "sample-policy"
-  description = "My test policy"
-  policy = <<EOT
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "1",
-      "Effect": "Allow",
-      "Action": [
-        "s3:*"
-      ],
-      "Resource": [
-        "arn:aws:s3:::*"
-      ],
-      "Condition": {
-        "StringNotEquals": {
-          "aws:ResourceAccount": "${data.aws_caller_identity.current.account_id}"
-        }
-      }
-    }
-  ]
-}
-EOT
-}
+  attribute {
+    name = "GameTitle"
+    type = "S"
+  }
 
-resource "aws_s3_bucket_policy" "example" {
-  bucket = aws_s3_bucket.example.id
-  policy = aws_iam_policy.policy.arn
+  attribute {
+    name = "TopScore"
+    type = "N"
+  }
+
+  ttl {
+    attribute_name = "TimeToExist"
+    enabled        = false
+  }
+
+  global_secondary_index {
+    name               = "GameTitleIndex"
+    hash_key           = "GameTitle"
+    range_key          = "TopScore"
+    write_capacity     = 10
+    read_capacity      = 10
+    projection_type    = "INCLUDE"
+    non_key_attributes = ["UserId"]
+  }
+
+  tags = {
+    Name        = "dynamodb-table-1"
+    Environment = "production"
+  }
 }
