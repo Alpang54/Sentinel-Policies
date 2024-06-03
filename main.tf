@@ -38,9 +38,4 @@ resource "aws_eks_cluster" "example" {
     endpoint_public_access  = false
     # ... other configuration ...
   }
-
-  access_config {
-    authentication_mode                         = "CONFIG_MAP"
-    bootstrap_cluster_creator_admin_permissions = true
-  }
 }
