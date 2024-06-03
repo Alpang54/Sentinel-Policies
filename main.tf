@@ -11,27 +11,11 @@ provider "aws" {
   region = "us-east-1"
 }
 
-resource "aws_sqs_queue" "q" {
-  name = "examplequeue"
-}
+resource "aws_ecr_repository" "foo" {
+  name                 = "bar"
+  image_tag_mutability = "MUTABLE"
 
-data "aws_iam_policy_document" "test" {
-  statement {
-    sid    = "First"
-    effect = "Allow"
-
-    principals {
-      type        = "*"
-      identifiers = ["*"]
-    }
-
-    actions   = ["sqs:SendMessage"]
-    resources = [aws_sqs_queue.q.arn]
-
+  image_scanning_configuration {
+    scan_on_push = true
   }
-}
-
-resource "aws_sqs_queue_policy" "test" {
-  queue_url = aws_sqs_queue.q.id
-  policy    = data.aws_iam_policy_document.test.json
 }
