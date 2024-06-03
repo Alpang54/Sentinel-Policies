@@ -11,14 +11,32 @@ provider "aws" {
   region = "us-east-1"
 }
 
-resource "aws_sqs_queue" "terraform_queue" {
-  name                      = "terraform-example-queue"
-  delay_seconds             = 90
-  max_message_size          = 2048
-  message_retention_seconds = 86400
-  receive_wait_time_seconds = 10
+resource "aws_sqs_queue" "q" {
+  name = "examplequeue"
+}
 
-  tags = {
-    Environment = "production"
+data "aws_iam_policy_document" "test" {
+  statement {
+    sid    = "First"
+    effect = "Allow"
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    actions   = ["sqs:SendMessage"]
+    resources = [aws_sqs_queue.q.arn]
+
+    condition {
+      test     = "ArnEquals"
+      variable = "aws:SourceArn"
+      values   = [aws_sns_topic.example.arn]
+    }
   }
+}
+
+resource "aws_sqs_queue_policy" "test" {
+  queue_url = aws_sqs_queue.q.id
+  policy    = data.aws_iam_policy_document.test.json
 }
