@@ -11,14 +11,36 @@ provider "aws" {
   region = "us-east-1"
 }
 
-resource "aws_efs_file_system" "fs" {
-  creation_token = "my-product"
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
 }
 
-resource "aws_efs_backup_policy" "policy" {
-  file_system_id = aws_efs_file_system.fs.id
+resource "aws_iam_role" "example" {
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+  name               = "example"
+}
 
-  backup_policy {
-    status = "DISABLED"
+resource "aws_eks_cluster" "example" {
+  name     = "example-cluster"
+  role_arn = aws_iam_role.example.arn
+
+  vpc_config {
+    endpoint_private_access = true
+    endpoint_public_access  = false
+    # ... other configuration ...
+  }
+
+  access_config {
+    authentication_mode                         = "CONFIG_MAP"
+    bootstrap_cluster_creator_admin_permissions = true
   }
 }
