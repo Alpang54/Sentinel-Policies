@@ -11,45 +11,48 @@ provider "aws" {
   region = "us-east-1"
 }
 
-data "aws_iam_policy_document" "assume_role" {
-  statement {
-    effect = "Allow"
-
-    principals {
-      type        = "Service"
-      identifiers = ["lambda.amazonaws.com"]
-    }
-
-    actions = ["sts:AssumeRole"]
-  }
+resource "aws_lambda_permission" "with_sns" {
+  statement_id  = "AllowExecutionFromSNS"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.func.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = aws_sns_topic.default.arn
 }
 
-resource "aws_iam_role" "iam_for_lambda" {
-  name               = "iam_for_lambda"
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+resource "aws_sns_topic" "default" {
+  name = "call-lambda-maybe"
 }
 
-data "archive_file" "lambda" {
-  type        = "zip"
-  source_file = "lambda.js"
-  output_path = "lambda_function_payload.zip"
+resource "aws_sns_topic_subscription" "lambda" {
+  topic_arn = aws_sns_topic.default.arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.func.arn
 }
 
-resource "aws_lambda_function" "test_lambda" {
-  # If the file is not in the current working directory you will need to include a
-  # path.module in the filename.
-  filename      = "lambda_function_payload.zip"
-  function_name = "lambda_function_name"
-  role          = aws_iam_role.iam_for_lambda.arn
-  handler       = "index.test"
+resource "aws_lambda_function" "func" {
+  filename      = "lambdatest.zip"
+  function_name = "lambda_called_from_sns"
+  role          = aws_iam_role.default.arn
+  handler       = "exports.handler"
+  runtime       = "python3.7"
+}
 
-  source_code_hash = data.archive_file.lambda.output_base64sha256
+resource "aws_iam_role" "default" {
+  name = "iam_for_lambda_with_sns"
 
-  runtime = "nodejs18.x"
-
-  environment {
-    variables = {
-      foo = "bar"
-    }
-  }
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      },
+    ]
+  })
 }
